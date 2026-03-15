@@ -9,7 +9,7 @@ int main()
     SetConsoleOutputCP(1251);
 
     // открытие файла + проверка корректности открытия
-    std::ifstream rdrw("ini.txt");
+    std::ifstream rdrw("in.txt");
     if (!rdrw.is_open())
     {
         std::cout << "Ошибка открытия файла!" << std::endl;
@@ -21,9 +21,14 @@ int main()
     int cols;
     rdrw >> rows >> cols;
 
-    // создание границ матрицы
-    int current[100][100] = { 0 };
-    int next[100][100] = { 0 };
+    // создание динамических массивов
+    int** current = new int* [rows];
+    int** next = new int* [rows];
+    for (int i = 0; i < rows; ++i)
+    {
+        current[i] = new int[cols](); // инициализация нулями
+        next[i] = new int[cols]();
+    }
 
     // считывание живых клеток из файла
     int x, y;
@@ -37,8 +42,8 @@ int main()
     rdrw.close();
 
     // количество поколений жизни
-    int generations = 21;
-    for (int gen = 0; gen < generations; gen++)
+    int generation = 0;
+    while (true)
     {
         // очистка экрана
         system("cls");
@@ -55,20 +60,20 @@ int main()
         }
 
         // вывод массива в консоль
-        for (int i = 0; i < rows; i++) 
+        for (int i = 0; i < rows; ++i)
         {
-            for (int j = 0; j < cols; j++) 
+            for (int j = 0; j < cols; ++j)
             {
                 if (current[i][j] == 1)
                     std::cout << "*";
                 else
                     std::cout << "-";
-                if (j < cols - 1) 
+                if (j < cols - 1)
                     std::cout << ' ';
             }
             std::cout << std::endl;
         }
-        std::cout << "Поколение: " << gen << ", Живых клеток: " << alive << "\n\n";
+        std::cout << "Поколение: " << generation << ", Живых клеток: " << alive << "\n\n";
 
         // если все клетки мертвы, конец
         if (alive == 0)
@@ -92,10 +97,9 @@ int main()
                             continue; 
                         int ci = i + ni;
                         int cj = j + nj;
-                        
-                        if (ci >= 0 && ci < cols && cj >= 0 && cj < rows) // сосед в пределах поля или нет
+                        if (ci >= 0 && ci < rows && cj >= 0 && cj < cols)// сосед в пределах поля или нет
                         {
-                            if (current[ci][cj] == 1) 
+                            if (current[ci][cj] == 1)
                                 neighbors++;
                         }
                     }
@@ -118,15 +122,40 @@ int main()
                 }
             }
         }
-
-        // копирование следующего поколения в текущее
-        for (int i = 0; i < rows; i++) 
-
-            for (int j = 0; j < cols; j++) 
+        //сравнение текущего и следующего поколений
+        bool stable = true;
+        for (int i = 0; i < rows && stable; ++i)
+        {
+            for (int j = 0; j < cols; ++j)
             {
-                current[i][j] = next[i][j];
+                if (current[i][j] != next[i][j])
+                {
+                    stable = false;
+                    break;
+                }
             }
+        }
+
+        if (stable)
+        {
+            std::cout << "Достигнута стабильная конфигурация. Конец симуляции." << std::endl;
+            break;
+        }
+
+        std::swap(current, next);
+
+        generation++;
         Sleep(1000);
     }
+
+    // освобождение памяти
+    for (int i = 0; i < rows; ++i)
+    {
+        delete[] current[i];
+        delete[] next[i];
+    }
+    delete[] current;
+    delete[] next;
+
     return EXIT_SUCCESS;
 }
