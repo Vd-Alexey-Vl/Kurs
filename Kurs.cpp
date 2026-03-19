@@ -42,7 +42,7 @@ int main()
     rdrw.close();
 
     // количество поколений жизни
-    int generation = 0;
+    int generation = 1;
     while (true)
     {
         // очистка экрана
@@ -138,12 +138,32 @@ int main()
 
         if (stable)
         {
+            // выводим следующее поколение
+            std::cout << "\n";
+
+            int alive_next = 0;
+            for (int i = 0; i < rows; ++i)
+            {
+                for (int j = 0; j < cols; ++j)
+                {
+                    if (next[i][j] == 1)
+                    {
+                        std::cout << "*";
+                        ++alive_next;
+                    }
+                    else
+                        std::cout << "-";
+                    if (j < cols - 1) std::cout << ' ';
+                }
+                std::cout << std::endl;
+            }
+            std::cout << "Поколение: " << generation + 1 << ", Живых клеток: " << alive_next << "\n\n";
             std::cout << "Достигнута стабильная конфигурация. Конец симуляции." << std::endl;
+            Sleep(1000); // пауза, чтобы увидеть второе поколение
             break;
         }
 
         std::swap(current, next);
-
         generation++;
         Sleep(1000);
     }
